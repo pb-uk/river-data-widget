@@ -5,7 +5,7 @@
   "type": "module",
   "browser": "dist/river-data-widget.min.js",
   "scripts": {
-    "build": "npm run clean && npm run lint && rollup -c",
+    "build": "npm run clean && rollup -c",
     "clean": "rimraf dist",
     "coverage": "rimraf coverage && c8 -r html -r text npm run test:unit",
     "lint": "eslint . && prettier . --check",

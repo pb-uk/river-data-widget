@@ -22,6 +22,9 @@ const banner = `/*! ${name} v${pkg.version} ${datetime}
  */
 `;
 
+// Target ECMAScript version (es2017 is good for all modern browsers in 2022).
+const target = 'es2017';
+
 export default [
   {
     input: './src/index.ts',
@@ -37,8 +40,7 @@ export default [
 
       typescript({
         compilerOptions: {
-          module: 'esnext',
-          target: 'es2017',
+          target,
         },
       }),
 
@@ -58,8 +60,7 @@ export default [
 
       typescript({
         compilerOptions: {
-          module: 'esnext',
-          target: 'es2017',
+          target,
         },
       }),
     ],
