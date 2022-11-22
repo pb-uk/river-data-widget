@@ -1,0 +1,6 @@
+# .eslintignore
+
+dist
+
+.nyc_output
+coverage

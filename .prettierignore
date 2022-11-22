@@ -1,0 +1,6 @@
+# .prettierignore
+
+dist
+
+.nyc_output
+coverage

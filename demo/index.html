@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RiverDataWidget Demo</title>
+
+    <script defer src="../dist/river-data-widget.min.js"></script>
+  </head>
+  <body>
+    <h1>RiverDataWidget Demo</h1>
+
+    <div
+      data-river-data-widget-station-id="3400TH"
+      data-river-data-widget-flow-sectors="0,30,150,250"
+    >
+      Load here
+    </div>
+
+    <script>
+      console.log(window);
+      var RiverWidgets = window.RiverWidgets || [];
+      RiverWidgets.push({
+        el: document.currentScript,
+        stationId: '3400TH',
+      });
+    </script>
+  </body>
+</html>
