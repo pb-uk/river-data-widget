@@ -28,7 +28,9 @@
     "url": "https://github.com/pb-uk/river-data-widget/issues"
   },
   "homepage": "https://github.com/pb-uk/river-data-widget#readme",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@rollup/plugin-json": "^5.0.1",

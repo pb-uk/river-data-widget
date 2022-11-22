@@ -2,13 +2,12 @@ name: Unit tests, build and test build
 
 on:
   push:
-    branches: [ main, start ]
+    branches: [main, start]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
