@@ -19,11 +19,11 @@ const drawFlowGauge = (el: HTMLElement, value: number) => {
   const strokeWidth = (viewBoxWidth * fraction) / 2;
   const inset = strokeWidth / 2;
   const r = viewBoxWidth / 2 - inset;
-  const x = inset;
-  const y = viewBoxHeight;
+  let x = inset;
+  let y = viewBoxHeight;
   const gaugeOffset = sectors[0];
   const gaugeRange = sectors[sectors.length - 1] - gaugeOffset;
-  for (let i = sectors.length - 1; i > 0; --i) {
+  for (let i = 1; i < sectors.length; ++i) {
     const fractionOfGaugeRange = sectors[i] / gaugeRange;
     const xx = -Math.cos(fractionOfGaugeRange * Math.PI) * r + r + inset;
     const yy = viewBoxHeight - Math.sin(fractionOfGaugeRange * Math.PI) * r;
@@ -33,10 +33,25 @@ const drawFlowGauge = (el: HTMLElement, value: number) => {
       stroke: backgrounds[i - 1],
       fill: 'none',
     });
-    // x = xx;
-    // y = yy;
+    x = xx;
+    y = yy;
     svgEl.append(path);
   }
+  x = inset;
+  y = viewBoxHeight;
+  const fractionOfGaugeRange = value / gaugeRange;
+  const xx = -Math.cos(fractionOfGaugeRange * Math.PI) * r + r + inset;
+  const yy = viewBoxHeight - Math.sin(fractionOfGaugeRange * Math.PI) * r;
+  const path = createSvgElement('path', {
+    d: `M${x} ${y}A${r} ${r} 0 0 1 ${xx} ${yy}`,
+    'stroke-width': strokeWidth / 2,
+    stroke: '#333',
+    fill: 'none',
+  });
+  x = xx;
+  y = yy;
+  svgEl.append(path);
+
   el.append(svgEl);
   const valueEl = createSvgElement(
     'text',
