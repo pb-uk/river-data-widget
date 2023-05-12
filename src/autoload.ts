@@ -1,8 +1,9 @@
-import { loadWidget } from './render.js';
+import { loadWidget } from './widget/render.js';
 
 const autoload = async () => {
-  if (window.RiverWidgets == null) return;
-  window.RiverWidgets.forEach(loadWidget);
+  document
+    .querySelectorAll('[data-river-data-widget]')
+    .forEach((el) => loadWidget(el));
 };
 
 if (document.readyState === 'loading') {

@@ -5,11 +5,12 @@
   "type": "module",
   "browser": "dist/river-data-widget.min.js",
   "scripts": {
-    "build": "npm run clean && rollup -c",
+    "build": "npm run clean && npm run lint && npm run test && rollup -c",
     "clean": "rimraf dist",
     "coverage": "rimraf coverage && c8 -r html -r text npm run test:unit",
     "lint": "eslint . && prettier . --check",
     "lint:fix": "eslint . --fix && prettier . --write",
+    "test": "npm run test:unit",
     "test:unit": "mocha src/**/*.spec.ts"
   },
   "repository": {
