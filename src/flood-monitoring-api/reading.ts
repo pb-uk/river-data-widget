@@ -1,6 +1,8 @@
 import { apiFetch } from './index';
 
-export { fetchStationReadings };
+export { fetchStationReadings, getReadingsLimits };
+
+type Reading = [a: number, b: number];
 
 const ms4Hours = 14400000;
 const ms1Day = 86400000;
@@ -25,4 +27,19 @@ const fetchStationReadings = async (stationId: string) => {
     rangesById[key.substring(key.lastIndexOf('/') + 1)] = range;
   });
   return rangesById;
+};
+
+const getReadingsLimits = (readings: Reading[]) => {
+  if (readings.length < 1) {
+    throw new Error('Readings must not be empty');
+  }
+  const minTime = readings[0][0];
+  const maxTime = readings[readings.length - 1][0];
+  let minValue = Infinity;
+  let maxValue = -minValue;
+  readings.forEach(([, value]) => {
+    minValue = Math.min(minValue, value);
+    maxValue = Math.max(maxValue, value);
+  });
+  return { minTime, maxTime, minValue, maxValue };
 };

@@ -1,18 +1,40 @@
-import { createSvgElement } from './dom-helpers';
+import { createElement, createSvgElement } from './dom-helpers';
 import { parseMeasureId } from './flood-monitoring-api/measure';
-import { fetchStationReadings } from './flood-monitoring-api/reading';
+import {
+  fetchStationReadings,
+  getReadingsLimits,
+} from './flood-monitoring-api/reading';
 
 export { loadWidget };
 
-const drawFlowGauge = (el: HTMLElement, value: number) => {
-  const sectors = [0, 50, 150, 200];
-  const backgrounds = ['#dfb', '#fdb', '#fcc'];
+interface WidgetOptions {
+  el?: HTMLElement | string;
+  stationId?: string;
+  flowSectors?: number[];
+  flowSectorBackgrounds?: string[];
+}
+
+const flowGuageDefaults = {
+  flowSectors: [0, 50, 150, 200],
+  flowSectorBackgrounds: ['#dfb', '#fdb', '#fcc'],
+};
+
+const drawFlowGauge = (
+  el: HTMLElement,
+  value: number,
+  options: WidgetOptions
+) => {
+  const { flowSectors, flowSectorBackgrounds } = {
+    ...flowGuageDefaults,
+    ...options,
+  };
   const fontFamily = 'system-ui, Arial, Helvetica, sans-serif';
   const fraction = 1 / 3;
   const viewBoxWidth = 420;
   const viewBoxHeight = 210;
   const svgEl = createSvgElement('svg', {
     viewBox: `0 0 ${viewBoxWidth} ${viewBoxHeight}`,
+    width: '100%',
   });
 
   // Create the gauge sectors.
@@ -21,16 +43,16 @@ const drawFlowGauge = (el: HTMLElement, value: number) => {
   const r = viewBoxWidth / 2 - inset;
   let x = inset;
   let y = viewBoxHeight;
-  const gaugeOffset = sectors[0];
-  const gaugeRange = sectors[sectors.length - 1] - gaugeOffset;
-  for (let i = 1; i < sectors.length; ++i) {
-    const fractionOfGaugeRange = sectors[i] / gaugeRange;
+  const gaugeOffset = flowSectors[0];
+  const gaugeRange = flowSectors[flowSectors.length - 1] - gaugeOffset;
+  for (let i = 1; i < flowSectors.length; ++i) {
+    const fractionOfGaugeRange = flowSectors[i] / gaugeRange;
     const xx = -Math.cos(fractionOfGaugeRange * Math.PI) * r + r + inset;
     const yy = viewBoxHeight - Math.sin(fractionOfGaugeRange * Math.PI) * r;
     const path = createSvgElement('path', {
       d: `M${x} ${y}A${r} ${r} 0 0 1 ${xx} ${yy}`,
       'stroke-width': strokeWidth,
-      stroke: backgrounds[i - 1],
+      stroke: flowSectorBackgrounds[i - 1],
       fill: 'none',
     });
     x = xx;
@@ -63,42 +85,40 @@ const drawFlowGauge = (el: HTMLElement, value: number) => {
       textAnchor: 'middle',
     }
   );
-  valueEl.textContent = value.toPrecision(2);
+  valueEl.textContent = value < 100 ? value.toPrecision(2) : Math.round(value);
   svgEl.append(valueEl);
 };
 
-const drawWidget = async (el: HTMLElement, widget) => {
-  const readings = await fetchStationReadings(widget.stationId);
-  /*
-  if (widget.isChart) {
-    const measures = [];
-    Object.entries(readings).forEach(([key, readings]) => {
-      measures.push({ key, readings });
-    });
-    measures.forEach((measure) => {
-      drawChart(el, measure);
-    });
-    return;
-  }
-  */
-  const widgetData: WidgetData = {};
-  console.log(readings);
+const drawWidget = async (el: HTMLElement, options: WidgetOptions) => {
+  const { stationId } = options;
+  if (!stationId) return;
+  const readings = await fetchStationReadings(stationId);
   Object.entries(readings).forEach(([measureId, timeSeriesData]) => {
-    // drawChart(el, measure);
     const measure = parseMeasureId(measureId);
     if (measure.parameter === 'flow') {
       const [currentFlowTime, currentFlow] =
         timeSeriesData[timeSeriesData.length - 1];
-      drawFlowGauge(el, currentFlow);
+      let textEl = createElement('div');
+      textEl.innerHTML = `${currentFlow} m<sup>3</sup>/s at ${currentFlowTime}`;
+      el.append(textEl);
+      drawFlowGauge(el, currentFlow, options);
+
+      textEl = createElement('div');
+      textEl.innerHTML = `Past 24 hours`;
+      drawFlowChart(el, measure, timeSeriesData, options);
     }
   });
 };
 
-const drawChart = (el: HTMLElement, measure) => {
-  const limits = getReadingsLimits(measure.readings);
-  const parsed = parseMeasureId(measure.key);
-  el.append(`<h3>${parsed.parameter}</h3>`);
-  drawData(el, measure.readings, { limits });
+const drawFlowChart = (
+  el: HTMLElement,
+  measure,
+  readings,
+  options: WidgetOptions
+) => {
+  const limits = getReadingsLimits(readings);
+  // el.append(`<h3>${measure.parameter}</h3>`);
+  drawData(el, readings, { limits });
 };
 
 const drawData = (plotAreaEl: HTMLElement, data, options = {}) => {
@@ -124,14 +144,18 @@ const drawData = (plotAreaEl: HTMLElement, data, options = {}) => {
   const path = createSvgElement('path', {
     d: points.join(''),
     stroke: '#333',
-    /* 'stroke-width': 2, */ fill: 'none',
+    'stroke-width': 4,
+    fill: 'none',
   });
   el.append(path);
   plotAreaEl.append(el);
 };
 
-const loadWidget = (widget) => {
-  const el = document.createElement('div');
-  widget.el.after(el);
-  drawWidget(el, widget);
+const loadWidget = (options: WidgetOptions) => {
+  const { el } = options;
+  const targetEl = typeof el === 'string' ? document.querySelector(el) : el;
+  const widgetEl = createElement('div', {}, { 'max-width': '200px' });
+  if (targetEl == null) return;
+  targetEl.after(widgetEl);
+  drawWidget(widgetEl, options);
 };
