@@ -1,4 +1,4 @@
-import { FloodMonitoringApiError } from './index';
+import { FloodMonitoringApiError } from './error';
 
 export { parseMeasureId };
 
@@ -13,5 +13,16 @@ const parseMeasureId = (measureId: string) => {
   }
   const [unit, interval, type, qualifier, parameter, stationId] =
     matches.reverse();
-  return { stationId, parameter, qualifier, type, interval, unit };
+  const qualifiedParameter = qualifier.length
+    ? `${parameter}-${qualifier}`
+    : parameter;
+  return {
+    stationId,
+    parameter,
+    qualifier,
+    type,
+    interval,
+    unit,
+    qualifiedParameter,
+  };
 };
