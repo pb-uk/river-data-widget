@@ -1,62 +1,78 @@
-import { apiFetch } from './index';
+import { apiFetch, toTimeParameter } from './api';
+import { useStore } from './store';
 
+import type { ApiParameters, ApiResponse } from './api';
+
+/**
+ * Internal format for readings.
+ */
 export type Reading = [
-  // Unix epoch timestamp (seconds).
-  timestamp: number,
-  // Value.
-  value: number
+  timestamp: number, // Unix epoch timestamp (seconds).
+  value: number // Value.
 ];
 
-type ReadingDTO = {
+/**
+ * Internal format for readings.
+ */
+export interface ReadingOptions {
+  since?: Date; // Time from.
+}
+
+/**
+ * Internal format for readings.
+ */
+type ReadingResponse = [a: Reading[], b: ApiResponse<ReadingDTO[]>];
+
+/**
+ * Data transfer object for readings provided by the API.
+ */
+interface ReadingDTO {
   '@id': string; // The URL of this reading.
-  dateTime: string; // ISO time (with 'Z' time zone).
+  dateTime: string; // e.g. '2023-05-13T09:00:00Z'.
   measure: string; // The URL of the measure.
   value: number; // The value in the appropriate units.
-};
-
-const ms4Hours = 14400000;
-const ms1Day = 86400000;
+}
 
 /**
  * Fetch the readings for a measure.
  *
- * @todo Caching and throttling.
- *
  * @param id The EA measure id.
- * @returns An array of readings for the measure.
+ * @returns A promise for an array of readings for the measure.
  */
-export const fetchMeasureReadings = async (id: string): Promise<Reading[]> => {
+export const fetchMeasureReadings = async (
+  id: string,
+  options: ReadingOptions = {}
+): Promise<ReadingResponse> => {
   // Set the parameters for the request.
-  const since =
-    new Date(Math.floor(Date.now() / ms4Hours) * ms4Hours - ms1Day)
-      .toISOString()
-      .substring(0, 19) + 'Z';
-  const params = { _sorted: '', since };
-  const [data] = await apiFetch(`/id/measures/${id}/readings`, params);
-
-  return parseReadings(data.items)[id];
+  const params: ApiParameters = { _sorted: '' };
+  if (options.since) {
+    params.since = toTimeParameter(options.since);
+  }
+  // Get the response, casting the items to ReadingDTOs.
+  const response = <ApiResponse<ReadingDTO[]>>(
+    await apiFetch(`/id/measures/${id}/readings`, params)
+  );
+  return [parseReadings(response.data.items)[id], response];
 };
 
 /**
- * Fetch the readings for a station.
+ * Get the readings for a measure.
  *
- * @todo Remove flow hard coding.
  * @todo Caching and throttling.
  *
  * @param id The EA measure id.
- * @returns An array of readings for the measure.
+ * @returns A promise for an array of readings for the measure.
  */
-export const fetchStationReadings = async (
-  stationId: string
-): Promise<Record<string, Reading[]>> => {
-  // @TODO caching and throttling.
-  const since =
-    new Date(Math.floor(Date.now() / ms4Hours) * ms4Hours - ms1Day)
-      .toISOString()
-      .substring(0, 19) + 'Z';
-  const params = { _sorted: '', since, parameter: 'flow' };
-  const [data] = await apiFetch(`/id/stations/${stationId}/readings`, params);
-  return parseReadings(data.items);
+export const getMeasureReadings = async (
+  id: string,
+  options: ReadingOptions = {}
+): Promise<Reading[]> => {
+  // const store = useStore();
+  // Get the last set of readings reported.
+  // const readings = store.get(`readings|id`);
+  // if (readings !== null) {
+  const [readings] = await fetchMeasureReadings(id, options);
+  return readings;
 };
 
 export const getReadingsLimits = (readings: Reading[]) => {
@@ -74,7 +90,9 @@ export const getReadingsLimits = (readings: Reading[]) => {
   return { minTime, maxTime, minValue, maxValue };
 };
 
-const parseReadings = (items: ReadingDTO[]): Record<string, Reading[]> => {
+export const parseReadings = (
+  items: ReadingDTO[]
+): Record<string, Reading[]> => {
   const ranges: Record<string, Reading[]> = {};
   items.forEach(({ measure, dateTime, value }) => {
     if (ranges[measure] == null) {

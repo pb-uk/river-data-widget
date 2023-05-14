@@ -3,10 +3,8 @@ import { createElement } from '../helpers/dom';
 import { parseMeasureId } from '../flood-monitoring-api/measure';
 import { drawFlowGauge } from './gauge';
 import { drawFlowChart } from './chart';
-import {
-  fetchMeasureReadings,
-  fetchStationReadings,
-} from '../flood-monitoring-api/reading';
+import { getMeasureReadings } from '../flood-monitoring-api';
+import { startOfDay } from '../helpers/time';
 
 import type { WidgetOptions } from '.';
 
@@ -15,57 +13,31 @@ const drawMeasureWidget = async (
   measureId: string,
   options: WidgetOptions = {}
 ) => {
-  const timeSeriesData = await fetchMeasureReadings(measureId);
-  console.log({ timeSeriesData });
+  // Get readings for the last 7 days (normally 672 values).
+  const since = startOfDay(-7);
 
-  const widgetEl = createElement('div', {}, { 'max-width': '200px' });
+  const timeSeriesData = await getMeasureReadings(measureId, { since });
+
+  const widgetEl = createElement('div', {}, { 'max-width': '480px' });
   parentEl.replaceChildren(widgetEl);
 
   const measure = parseMeasureId(measureId);
 
-  // if (measure.parameter === 'flow') {
   const [time, value] = timeSeriesData[timeSeriesData.length - 1];
   let textEl = createElement('div');
 
-  // { stationId, parameter, qualifier, type, interval, unit };
-  console.log(measure);
+  // { stationId, parameter, qualifier, type, interval, unit, qualifiedParameter };
   const param = measure.qualifiedParameter;
   const station = measure.stationId;
   const unit = measure.unit;
   // textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} m<sup>3</sup>/s at ${time}`;
-  textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} ${unit} at ${time}`;
+  const when = new Date(time * 1000).toLocaleString();
+  textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} ${unit} at ${when}`;
   widgetEl.append(textEl);
 
   textEl = createElement('div');
   textEl.innerHTML = `Past 24 hours`;
   drawFlowChart(widgetEl, measure, timeSeriesData, options);
-};
-
-const drawStationWidget = async (
-  parentEl: HTMLElement,
-  stationId: string,
-  options: WidgetOptions = {}
-) => {
-  const readings = await fetchStationReadings(stationId);
-
-  const widgetEl = createElement('div', {}, { 'max-width': '200px' });
-  parentEl.replaceChildren(widgetEl);
-
-  Object.entries(readings).forEach(([measureId, timeSeriesData]) => {
-    const measure = parseMeasureId(measureId);
-    if (measure.parameter === 'flow') {
-      const [currentFlowTime, currentFlow] =
-        timeSeriesData[timeSeriesData.length - 1];
-      let textEl = createElement('div');
-      textEl.innerHTML = `${currentFlow} m<sup>3</sup>/s at ${currentFlowTime}`;
-      widgetEl.append(textEl);
-      drawFlowGauge(widgetEl, currentFlow, options);
-
-      textEl = createElement('div');
-      textEl.innerHTML = `Past 24 hours`;
-      drawFlowChart(widgetEl, measure, timeSeriesData, options);
-    }
-  });
 };
 
 /**
@@ -92,9 +64,8 @@ export const loadWidget = (el: HTMLElement | string) => {
       break;
 
     // The 'station' widget is experimental in v1.0 and should not be used.
-    case 'station':
-      drawStationWidget(targetEl, id, options);
-      break;
+    // case 'station':
+    // break;
 
     default:
       throw new RiverDataWidgetError('Unknown widget definition', { type, id });

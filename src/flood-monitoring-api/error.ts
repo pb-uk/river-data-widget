@@ -1,9 +1,7 @@
-export type FloodMonitoringApiErrorInfo = Record<string, unknown>;
-
 export class FloodMonitoringApiError extends Error {
-  public info: FloodMonitoringApiErrorInfo;
+  public info: Record<string, unknown>;
 
-  constructor(msg: string, info: FloodMonitoringApiErrorInfo = {}) {
+  constructor(msg: string, info: Record<string, unknown> = {}) {
     super(msg);
     this.name = 'FloodMonitoringApiError';
     this.info = info;
