@@ -7,10 +7,10 @@ let instance: Store;
 class Store {
   clear(destroy = false) {
     for (const key of this.keys()) {
-      localStorage.remove(addPrefix(key));
+      localStorage.removeItem(addPrefix(key));
     }
     if (destroy) {
-      localStorage.remove(prefix);
+      localStorage.removeItem(prefix);
       return;
     }
     localStorage.setItem(prefix, JSON.stringify([]));
@@ -52,7 +52,7 @@ class Store {
 
   unset(key: string): boolean {
     // Remove it before we do anything else.
-    localStorage.remove(addPrefix(key));
+    localStorage.removeItem(addPrefix(key));
 
     // Then remove it from the list of keys.
     const storedKeys = localStorage.getItem(prefix);

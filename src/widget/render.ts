@@ -1,10 +1,13 @@
 import { RiverDataWidgetError } from '../error';
 import { createElement } from '../helpers/dom';
-import { parseMeasureId } from '../flood-monitoring-api/measure';
-import { drawFlowGauge } from './gauge';
+import {
+  parseMeasureId,
+  translateMeasureProperties,
+} from '../flood-monitoring-api/measure';
+// import { drawFlowGauge } from './gauge';
 import { drawFlowChart } from './chart';
 import { getMeasureReadings } from '../flood-monitoring-api';
-import { startOfDay } from '../helpers/time';
+import { startOfDay, dateFormatter, timeFormatter } from '../helpers/time';
 
 import type { WidgetOptions } from '.';
 
@@ -13,8 +16,8 @@ const drawMeasureWidget = async (
   measureId: string,
   options: WidgetOptions = {}
 ) => {
-  // Get readings for the last 7 days (normally 672 values).
-  const since = startOfDay(-7);
+  // Get readings for the last 7 days in local time.
+  const since = startOfDay(-7, true);
 
   const timeSeriesData = await getMeasureReadings(measureId, { since });
 
@@ -27,12 +30,15 @@ const drawMeasureWidget = async (
   let textEl = createElement('div');
 
   // { stationId, parameter, qualifier, type, interval, unit, qualifiedParameter };
-  const param = measure.qualifiedParameter;
+  const m = translateMeasureProperties(measure);
+  const param = m.qualifiedParameter;
   const station = measure.stationId;
-  const unit = measure.unit;
+  const unit = m.unit;
   // textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} m<sup>3</sup>/s at ${time}`;
-  const when = new Date(time * 1000).toLocaleString();
-  textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} ${unit} at ${when}`;
+  const d = dateFormatter.format(new Date(time * 1000));
+  const t = timeFormatter.format(new Date(time * 1000));
+  textEl.innerHTML = `The most recent ${param} reading for station ${station} was ${value} ${unit} at ${t} on ${d}.`;
+  textEl.innerHTML += `<br>Latest reading ${value} ${unit} at ${t} on ${d}.`;
   widgetEl.append(textEl);
 
   textEl = createElement('div');

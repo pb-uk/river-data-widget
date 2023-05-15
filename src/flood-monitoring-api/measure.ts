@@ -26,3 +26,27 @@ const parseMeasureId = (measureId: string) => {
     qualifiedParameter,
   };
 };
+
+const measureTranslations: Record<string, Record<string, string>> = {
+  unit: {
+    m3_s: 'm<sup>3</sup>/s',
+    mAOD: 'm',
+  },
+  qualifiedParameter: {
+    'level-stage': 'level',
+    'level-downstream': 'downstream level',
+  },
+};
+
+export const translateMeasureProperties = (measure: Record<string, string>) => {
+  const translated: Record<string, string> = {};
+  for (const prop in measure) {
+    const value = measure[prop];
+    if (measureTranslations[prop] && measureTranslations[prop][value]) {
+      translated[prop] = measureTranslations[prop][value];
+    } else {
+      translated[prop] = value;
+    }
+  }
+  return translated;
+};
