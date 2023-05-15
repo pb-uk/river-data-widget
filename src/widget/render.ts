@@ -1,5 +1,6 @@
 import { RiverDataWidgetError } from '../error';
 import { createElement } from '../helpers/dom';
+import { round3 } from '../helpers/format';
 import {
   parseMeasureId,
   translateMeasureProperties,
@@ -31,14 +32,15 @@ const drawMeasureWidget = async (
 
   // { stationId, parameter, qualifier, type, interval, unit, qualifiedParameter };
   const m = translateMeasureProperties(measure);
+  const v = round3(value);
   const param = m.qualifiedParameter;
   const station = measure.stationId;
   const unit = m.unit;
   // textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} m<sup>3</sup>/s at ${time}`;
   const d = dateFormatter.format(new Date(time * 1000));
   const t = timeFormatter.format(new Date(time * 1000));
-  textEl.innerHTML = `The most recent ${param} reading for station ${station} was ${value} ${unit} at ${t} on ${d}.`;
-  textEl.innerHTML += `<br>Latest reading ${value} ${unit} at ${t} on ${d}.`;
+  textEl.innerHTML = `The most recent ${param} reading for station ${station} was ${v} ${unit} at ${t} on ${d}.`;
+  textEl.innerHTML += `<br>Latest reading ${v} ${unit} at ${t} on ${d}.`;
   widgetEl.append(textEl);
 
   textEl = createElement('div');

@@ -1,8 +1,10 @@
 import { apiFetch, toTimeParameter } from './api';
 import { useStore } from './store';
-import { DAY_MS, startOfDay } from '../helpers/time';
+import { MINUTE_MS, startOfDay } from '../helpers/time';
 
 import type { ApiParameters, ApiResponse } from './api';
+
+const THROTTLE_MS = 15 * MINUTE_MS;
 
 /**
  * Internal format for readings.
@@ -59,7 +61,6 @@ const fetchMeasureReadings = async (
   const response = <ApiResponse<ReadingDTO[]>>(
     await apiFetch(`/id/measures/${id}/readings`, params)
   );
-  const parsed = parseReadings(response.data.items);
   return [parseReadings(response.data.items)[id] || [], response];
 };
 
@@ -103,7 +104,7 @@ export const getMeasureReadings = async (
 
   if (
     storedSince <= requestedSince &&
-    Date.now() < lastCheck * 1000 + DAY_MS * 30
+    Date.now() < lastCheck * 1000 + THROTTLE_MS
   ) {
     console.log('Throttled');
     return filterSince(data, requestedSince);
