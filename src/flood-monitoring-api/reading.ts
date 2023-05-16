@@ -122,21 +122,6 @@ export const getMeasureReadings = async (
   return filterSince(data, requestedSince);
 };
 
-export const getReadingsLimits = (readings: Reading[]) => {
-  if (readings.length < 1) {
-    throw new Error('Readings must not be empty');
-  }
-  const minTime = readings[0][0];
-  const maxTime = readings[readings.length - 1][0];
-  let minValue = Infinity;
-  let maxValue = -minValue;
-  readings.forEach(([, value]) => {
-    minValue = Math.min(minValue, value);
-    maxValue = Math.max(maxValue, value);
-  });
-  return { minTime, maxTime, minValue, maxValue };
-};
-
 export const mergeReadings = (first: Reading[], second: Reading[]): void => {
   if (!second.length) return;
 

@@ -1,6 +1,6 @@
 import { RiverDataWidgetError } from '../error';
 import { createElement } from '../helpers/dom';
-import { round3 } from '../helpers/format';
+import { FONT_STACK, round3 } from '../helpers/format';
 import {
   parseMeasureId,
   translateMeasureProperties,
@@ -22,7 +22,11 @@ const drawMeasureWidget = async (
 
   const timeSeriesData = await getMeasureReadings(measureId, { since });
 
-  const widgetEl = createElement('div', {}, { 'max-width': '480px' });
+  const widgetEl = createElement(
+    'div',
+    {},
+    { 'max-width': '480px', 'font-family': FONT_STACK, 'font-size': '1rem' }
+  );
   parentEl.replaceChildren(widgetEl);
 
   const measure = parseMeasureId(measureId);

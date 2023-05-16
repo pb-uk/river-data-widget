@@ -47,7 +47,7 @@ export const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
-  year: 'numeric',
+  // year: 'numeric',
 });
 
 export const timeFormatter = new Intl.DateTimeFormat('en-GB', {
