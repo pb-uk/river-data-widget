@@ -1,60 +1,65 @@
 import { RiverDataWidgetError } from '../error';
 import { createElement } from '../helpers/dom';
-import { FONT_STACK, round3 } from '../helpers/format';
+import { round3 } from '../helpers/format';
 import {
   parseMeasureId,
   translateMeasureProperties,
 } from '../flood-monitoring-api/measure';
 // import { drawFlowGauge } from './gauge';
-import { drawFlowChart } from './chart';
+import { Chart } from './chart';
 import { getMeasureReadings } from '../flood-monitoring-api';
-import { startOfDay, dateFormatter, timeFormatter } from '../helpers/time';
+import { startOfDay } from '../helpers/time';
 
-import type { WidgetOptions } from '.';
+import type { ChartSeries } from './chart';
 
 const drawMeasureWidget = async (
   parentEl: HTMLElement,
   measureId: string,
-  options: WidgetOptions = {}
+  options: Record<string, unknown> = {}
 ) => {
+  console.log({ options });
+
   // Get readings for the last 7 days in local time.
-  const since = startOfDay(-7, true);
+  const since = startOfDay(null, -7, true);
 
-  const timeSeriesData = await getMeasureReadings(measureId, { since });
+  const data = await getMeasureReadings(measureId, { since });
 
-  const widgetEl = createElement(
-    'div',
-    {},
-    {
-      'max-width': '480px',
-      margin: 'auto',
-      'font-family': FONT_STACK,
-      'font-size': '1rem',
-    }
-  );
-  parentEl.replaceChildren(widgetEl);
+  parentEl.replaceChildren();
 
   const measure = parseMeasureId(measureId);
+  const { unit } = translateMeasureProperties(measure);
 
-  const [time, value] = timeSeriesData[timeSeriesData.length - 1];
-  let textEl = createElement('div');
+  // const [time, value] = data[data.length - 1];
+  // const v = round3(value);
+  // const param = m.qualifiedParameter;
+  // const station = measure.stationId;
+  // const unit = m.unit;
 
-  // { stationId, parameter, qualifier, type, interval, unit, qualifiedParameter };
-  const m = translateMeasureProperties(measure);
-  const v = round3(value);
-  const param = m.qualifiedParameter;
-  const station = measure.stationId;
-  const unit = m.unit;
-  // textEl.innerHTML = `The most recent ${param} reading for ${station} was ${value} m<sup>3</sup>/s at ${time}`;
-  const d = dateFormatter.format(new Date(time * 1000));
-  const t = timeFormatter.format(new Date(time * 1000));
-  textEl.innerHTML = `The most recent ${param} reading for station ${station} was ${v} ${unit} at ${t} on ${d}.`;
-  textEl.innerHTML += `<br>Latest reading ${v} ${unit} at ${t} on ${d}.`;
-  widgetEl.append(textEl);
+  // let textEl = createElement('div');
+  // const d = dateFormatter.format(new Date(time * 1000));
+  // const t = timeFormatter.format(new Date(time * 1000));
+  // textEl.innerHTML = `The most recent ${param} reading for station ${station} was ${v} ${unit} at ${t} on ${d}.`;
+  // widgetEl.append(textEl);
 
-  textEl = createElement('div');
-  textEl.innerHTML = `Past 24 hours`;
-  drawFlowChart(widgetEl, measure, timeSeriesData, options);
+  const series1: ChartSeries = { data, unit, formatter: round3 };
+  if (options.riverDataWidgetMinValue == null) {
+    series1.min = 0;
+  } else {
+    if (options.riverDataWidgetMinValue !== true) {
+      series1.min = parseFloat(<string>options.riverDataWidgetMinValue);
+    }
+  }
+  const minTime = startOfDay(new Date(data[0][0] * 1000)).valueOf() / 1000;
+  const maxTime =
+    startOfDay(new Date(data[data.length - 1][0] * 1000), 1).valueOf() / 1000;
+  const chartOptions = {
+    minTime,
+    maxTime,
+    // attribution: `www.riverdata.co.uk/station/${measure.stationId}`,
+  };
+
+  const chart = new Chart(parentEl, [series1], chartOptions);
+  chart.render();
 };
 
 /**
@@ -73,7 +78,7 @@ export const loadWidget = (el: HTMLElement | string) => {
   const widgetIdParts = targetEl.dataset.riverDataWidget?.split(':') ?? [];
   const type = widgetIdParts.shift();
   const id = widgetIdParts.join(':');
-  const options: WidgetOptions = targetEl.dataset;
+  const options = targetEl.dataset;
 
   switch (type) {
     case 'measure':

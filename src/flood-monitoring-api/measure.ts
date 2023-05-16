@@ -7,9 +7,7 @@ const parseMeasureId = (measureId: string) => {
   const regExp = /(.*)-([^-]*)-([^-]*)-([^-]*)-([^-]*)-([^-]*)$/;
   const matches = measureId.match(regExp);
   if (matches === null) {
-    const e = new FloodMonitoringApiError('Cannot parse measure id');
-    e.info = { measureId };
-    throw e;
+    throw new FloodMonitoringApiError('Cannot parse measure id', { measureId });
   }
   const [unit, interval, type, qualifier, parameter, stationId] =
     matches.reverse();
@@ -29,12 +27,13 @@ const parseMeasureId = (measureId: string) => {
 
 const measureTranslations: Record<string, Record<string, string>> = {
   unit: {
-    m3_s: 'm<sup>3</sup>/s',
+    m3_s: 'm³/s',
     mAOD: 'm',
+    mASD: 'm',
   },
   qualifiedParameter: {
     'level-stage': 'level',
-    'level-downstream': 'downstream level',
+    'level-downstage': 'downstream level',
   },
 };
 

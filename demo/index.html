@@ -11,15 +11,18 @@
   <body>
     <h1>RiverDataWidget Demo</h1>
 
+    <h3>Flow at Kingston</h3>
     <div
       class="demo1"
       data-river-data-widget="measure:3400TH-flow--i-15_min-m3_s"
-    >
-      Load flow here
-    </div>
-    <!-- div data-river-data-widget="measure:3400TH-level-stage-i-15_min-mAOD">
-      Load level here
-    </div -->
-    <!-- div data-river-data-widget="station:3400TH">Load station here</div -->
+    ></div>
+    <div
+      data-river-data-widget="measure:3400TH-level-stage-i-15_min-mAOD"
+      data-river-data-widget-min-value="3"
+    ></div>
+    <h3>Downstream level at Teddington</h3>
+    <div
+      data-river-data-widget="measure:3401TH-level-downstage-i-15_min-mASD"
+    ></div>
   </body>
 </html>

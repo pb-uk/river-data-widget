@@ -11,12 +11,14 @@ export const DAY_MS = 86400000;
  * @returns The reqested date.
  */
 export const startOfDay = (
+  date: Date | null = null,
   offset = 0,
   timeZone: boolean | number = false
 ): Date => {
   if (timeZone === false) {
     // Use UTC.
-    return new Date(Math.floor(Date.now() / DAY_MS + offset) * DAY_MS);
+    const base = date === null ? Date.now() : date.valueOf();
+    return new Date(Math.floor(base / DAY_MS + offset) * DAY_MS);
   }
 
   const now = new Date();

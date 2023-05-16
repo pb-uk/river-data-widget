@@ -90,7 +90,7 @@ export const getMeasureReadings = async (
     lastCheck: 0,
     storedSince: Infinity,
   };
-  const discardBefore = startOfDay(-30, true).valueOf() / 1000;
+  const discardBefore = startOfDay(null, -30, true).valueOf() / 1000;
 
   // Discard any older than 30 days.
   while (data.length && data[0][0] < discardBefore) {
