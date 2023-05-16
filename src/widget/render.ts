@@ -25,7 +25,12 @@ const drawMeasureWidget = async (
   const widgetEl = createElement(
     'div',
     {},
-    { 'max-width': '480px', 'font-family': FONT_STACK, 'font-size': '1rem' }
+    {
+      'max-width': '480px',
+      margin: 'auto',
+      'font-family': FONT_STACK,
+      'font-size': '1rem',
+    }
   );
   parentEl.replaceChildren(widgetEl);
 

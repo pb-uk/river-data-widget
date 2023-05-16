@@ -46,11 +46,11 @@ const drawChart = (
   const valueOffset = minValue;
   const valueScale = (height - strokeWidth) / (maxValue - minValue);
 
-  const el = createSvgElement('svg', { viewBox });
+  const el = createSvgElement('svg', { viewBox }, { 'font-size': '12px' });
   plotAreaEl.append(el);
 
   // X axis
-  const hGrids = getHorizontalGridlines(
+  const [valueLines, valueLabels] = getHorizontalGridlines(
     valueOffset,
     maxValue,
     valueScale,
@@ -60,7 +60,7 @@ const drawChart = (
     // const x2 = xOffset + (maxTime - timeOffset) * timeScale;
     xOffset + (maxTime - timeOffset) * timeScale
   );
-  el.append(...hGrids);
+  el.append(valueLines);
 
   // First data point.
   const x = xOffset + (data[0][0] - timeOffset) * timeScale;
@@ -75,11 +75,32 @@ const drawChart = (
   // Plot the data.
   const path = createSvgElement('path', {
     d: points.join(''),
-    stroke: '#333',
+    stroke: '#77C',
     'stroke-width': strokeWidth,
     fill: 'none',
   });
   el.append(path);
+
+  // Plot labels on top of the line.
+  el.append(valueLabels);
+  const attrib = 'www.riverdata.co.uk/station/3400TH';
+  el.append(
+    createSvgElement(
+      'text',
+      { x: width / 2, 'text-anchor': 'middle', y: height - 4 },
+      { fill: '#999' },
+      attrib
+    )
+  );
+
+  /*
+  const v = round3(value);
+  const station = measure.stationId;
+  const unit = m.unit;
+  const d = dateFormatter.format(new Date(time * 1000));
+  const t = timeFormatter.format(new Date(time * 1000));
+  textEl.innerHTML += `<br>Latest reading ${v} ${unit} at ${t} on ${d}.`;
+  */
 };
 
 export const getLimits = (data: TimeSeriesData[]) => {
@@ -108,7 +129,7 @@ export const getInterval = (range: number, maxDivisions: number) => {
 export const getHorizontalGridlines = (
   minValue: number,
   maxValue: number,
-  valueScale: number,
+  yScale: number,
   yOffset: number,
   // const x1 = xOffset;
   x1: number,
@@ -116,16 +137,20 @@ export const getHorizontalGridlines = (
   x2: number
 ): SVGElement[] => {
   // Horizontal grid lines.
-  const lines = [];
   const stroke = '#ddd';
+  const lines = createSvgElement('g', { stroke });
+  const labels = createSvgElement('g');
   const valueRange = maxValue - minValue;
   // Horizontal grid interval.
   const interval = getInterval(valueRange, 6);
   let value = Math.ceil(minValue / interval + 1) * interval;
   while (value < maxValue) {
-    const y1 = yOffset - (value - minValue) * valueScale;
-    lines.push(createSvgElement('line', { x1, y1, x2, y2: y1, stroke }));
+    const y1 = yOffset - (value - minValue) * yScale;
+    lines.append(createSvgElement('line', { x1, y1, x2, y2: y1 }));
+    labels.append(
+      createSvgElement('text', { x: x1 + 4, y: y1 + 4 }, {}, `${value}`)
+    );
     value += interval;
   }
-  return lines;
+  return [lines, labels];
 };
