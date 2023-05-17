@@ -117,8 +117,7 @@ export class Chart {
   }
 
   getTimeScale(): SVGElement[] {
-    const { minTime, maxTime, timeScale, minValue, maxValue, valueScale } =
-      this.getLimits();
+    const { minTime, maxTime, timeScale } = this.getLimits();
     const xOffset = this.strokeWidth / 2;
     const yOffset = this.plotHeight + this.strokeWidth / 2;
     const y1 = yOffset + this.fontSizePx * 3;

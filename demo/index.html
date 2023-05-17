@@ -6,22 +6,33 @@
     <title>RiverDataWidget Demo</title>
 
     <script defer src="../dist/river-data-widget.min.js"></script>
-    <style></style>
+    <style>
+      .demo {
+        max-width: 480px;
+        margin: 1rem 0;
+      }
+    </style>
   </head>
   <body>
     <h1>RiverDataWidget Demo</h1>
 
     <h3>Flow at Kingston</h3>
     <div
-      class="demo1"
+      class="demo demo1"
       data-river-data-widget="measure:3400TH-flow--i-15_min-m3_s"
+      data-river-data-widget-min-value="0"
     ></div>
+
+    <h3>Level at Kingston</h3>
     <div
+      class="demo demo2"
       data-river-data-widget="measure:3400TH-level-stage-i-15_min-mAOD"
       data-river-data-widget-min-value="3"
     ></div>
+
     <h3>Downstream level at Teddington</h3>
     <div
+      class="demo demo3"
       data-river-data-widget="measure:3401TH-level-downstage-i-15_min-mASD"
     ></div>
   </body>

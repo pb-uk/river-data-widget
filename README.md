@@ -2,19 +2,14 @@
 
 A web widget to display river flow and other data.
 
-## Development
+## Quick start
 
-```console
-$ npm init -y
-$ # Typescript
-$ npm i -D typescript
-$ tsc init
-$ # Rollup
-$ npm i -D rollup @rollup/plugin-json @rollup/plugin-typescript rollup-plugin-terser camelcase rimraf
-$ # Linting and formatting
-$ npx eslint --init
-$ npm i -D prettier
-$ # Testing
-$ npm i -D mocha chai ts-node @types/mocha @types/chai eslint-plugin-mocha
-$ npx eslint --init
+```html
+<script defer src="https://cdn.jsdelivr.net/npm/river-data-widget@1"></script>
+<h3>Flow at Kingston</h3>
+<div
+  style="max-width: 480px; margin: 1em 0;"
+  data-river-data-widget="measure:3400TH-flow--i-15_min-m3_s"
+  data-river-data-widget-min-value="0"
+></div>
 ```

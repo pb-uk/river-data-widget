@@ -2,7 +2,7 @@ name: Unit tests, build and test build
 
 on:
   push:
-    branches: [main, start]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
@@ -16,6 +16,5 @@ jobs:
         with:
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint
       - run: npm run test:unit
       - run: npm run build

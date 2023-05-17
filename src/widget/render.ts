@@ -40,12 +40,8 @@ const drawMeasureWidget = async (
   // widgetEl.append(textEl);
 
   const series1: ChartSeries = { data, unit, formatter: round3 };
-  if (options.riverDataWidgetMinValue == null) {
-    series1.min = 0;
-  } else {
-    if (options.riverDataWidgetMinValue !== true) {
-      series1.min = parseFloat(<string>options.riverDataWidgetMinValue);
-    }
+  if (options.riverDataWidgetMinValue != null) {
+    series1.min = parseFloat(<string>options.riverDataWidgetMinValue);
   }
   const minTime = startOfDay(new Date(data[0][0] * 1000)).valueOf() / 1000;
   const maxTime =
