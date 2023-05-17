@@ -1,6 +1,6 @@
 {
   "name": "river-data-widget",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A web widget to display river flow and other data.",
   "type": "module",
   "browser": "dist/river-data-widget.min.js",

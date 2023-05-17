@@ -4,7 +4,8 @@ import { MINUTE_MS, startOfDay } from '../helpers/time';
 
 import type { ApiParameters, ApiResponse } from './api';
 
-const THROTTLE_MS = 15 * MINUTE_MS;
+// Throttle requests to five minutes.
+const THROTTLE_MS = 5 * MINUTE_MS;
 
 /**
  * Internal format for readings.
@@ -85,22 +86,25 @@ export const getMeasureReadings = async (
   const key = `readings|${id}`;
   const store = useStore();
 
-  const { data, lastCheck, storedSince }: StoredReadings = store.get(key) || {
+  const stored: StoredReadings = store.get(key) || {
     data: [],
     lastCheck: 0,
     storedSince: Infinity,
   };
-  const discardBefore = startOfDay(null, -30, true).valueOf() / 1000;
+  const { data, lastCheck } = stored;
+  let { storedSince } = stored;
+
+  const discardBefore = startOfDay(null, -8, true).valueOf() / 1000;
 
   // Discard any older than 30 days.
   while (data.length && data[0][0] < discardBefore) {
+    [storedSince] = data[0];
     data.shift();
   }
 
-  // If we have data early enough Throttle at 15 mins.
+  // If we have data early enough apply throttle.
   const lastStored = data.length ? data[data.length - 1][0] : 0;
   const requestedSince = (options.since && options.since.valueOf() / 1000) || 0;
-
   if (
     storedSince <= requestedSince &&
     Date.now() < lastCheck * 1000 + THROTTLE_MS
@@ -116,8 +120,8 @@ export const getMeasureReadings = async (
 
   const [newData] = await fetchMeasureReadings(id, fetchOptions);
   mergeReadings(data, newData);
-  const newSince = Math.min(requestedSince, storedSince);
-  store.set(key, { lastCheck: Date.now() / 1000, data, storedSince: newSince });
+  storedSince = Math.min(requestedSince, storedSince);
+  store.set(key, { lastCheck: Date.now() / 1000, data, storedSince });
   return filterSince(data, requestedSince);
 };
 
