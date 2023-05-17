@@ -100,13 +100,12 @@ export const getMeasureReadings = async (
   // If we have data early enough Throttle at 15 mins.
   const lastStored = data.length ? data[data.length - 1][0] : 0;
   const requestedSince = (options.since && options.since.valueOf() / 1000) || 0;
-  console.log({ lastStored, requestedSince });
 
   if (
     storedSince <= requestedSince &&
     Date.now() < lastCheck * 1000 + THROTTLE_MS
   ) {
-    console.log('Throttled');
+    // Throttled.
     return filterSince(data, requestedSince);
   }
 

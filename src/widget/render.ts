@@ -15,8 +15,6 @@ const drawMeasureWidget = async (
   measureId: string,
   options: Record<string, unknown> = {}
 ) => {
-  console.log({ options });
-
   // Get readings for the last 7 days in local time.
   const since = startOfDay(null, -7, true);
 
