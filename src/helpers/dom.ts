@@ -34,17 +34,25 @@ const setStyles = <T extends HTMLElement | SVGElement>(
 const createElement = (
   name = 'div',
   attributes: AttributeList = {},
-  styles: AttributeList = {}
+  styles: AttributeList = {},
+  innerHTML: string | false = false
 ): HTMLElement => {
   const el = document.createElement(name);
+  if (innerHTML !== false) {
+    el.innerHTML = innerHTML;
+  }
   return setStyles(setAttributes(el, attributes), styles);
 };
 
 const createSvgElement = (
   name = 'svg',
   attributes: AttributeList = {},
-  styles: AttributeList = {}
+  styles: AttributeList = {},
+  innerHTML: string | false = false
 ) => {
   const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+  if (innerHTML !== false) {
+    el.innerHTML = innerHTML;
+  }
   return setStyles(setAttributes(el, attributes), styles);
 };

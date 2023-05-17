@@ -6,24 +6,35 @@
     <title>RiverDataWidget Demo</title>
 
     <script defer src="../dist/river-data-widget.min.js"></script>
+
+    <style>
+      .demo {
+        max-width: 480px;
+        margin: 1rem 0;
+      }
+    </style>
   </head>
   <body>
     <h1>RiverDataWidget Demo</h1>
 
+    <h3>Flow at Kingston</h3>
     <div
-      data-river-data-widget-station-id="3400TH"
-      data-river-data-widget-flow-sectors="0,30,150,250"
-    >
-      Load here
-    </div>
+      class="demo demo1"
+      data-river-data-widget="measure:3400TH-flow--i-15_min-m3_s"
+      data-river-data-widget-min-value="0"
+    ></div>
 
-    <script>
-      console.log(window);
-      var RiverWidgets = window.RiverWidgets || [];
-      RiverWidgets.push({
-        el: document.currentScript,
-        stationId: '3400TH',
-      });
-    </script>
+    <h3>Level at Kingston</h3>
+    <div
+      class="demo demo2"
+      data-river-data-widget="measure:3400TH-level-stage-i-15_min-mAOD"
+      data-river-data-widget-min-value="3"
+    ></div>
+
+    <h3>Downstream level at Teddington</h3>
+    <div
+      class="demo demo3"
+      data-river-data-widget="measure:3401TH-level-downstage-i-15_min-mASD"
+    ></div>
   </body>
 </html>

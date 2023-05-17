@@ -1,8 +1,13 @@
-import { loadWidget } from './render.js';
+import { loadWidget } from './widget/render';
 
 const autoload = async () => {
-  if (window.RiverWidgets == null) return;
-  window.RiverWidgets.forEach(loadWidget);
+  document.querySelectorAll('[data-river-data-widget]').forEach((el) => {
+    try {
+      loadWidget(<HTMLElement>el);
+    } catch (error) {
+      console.error(error, { error });
+    }
+  });
 };
 
 if (document.readyState === 'loading') {

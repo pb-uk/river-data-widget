@@ -1,5 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import { readFileSync } from 'node:fs';
 import camelCase from 'camelcase';
 import json from '@rollup/plugin-json';
