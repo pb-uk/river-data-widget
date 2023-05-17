@@ -1,6 +1,6 @@
 {
   "name": "river-data-widget",
-  "version": "1.0.1",
+  "version": "1.1.0-dev",
   "description": "A web widget to display river flow and other data.",
   "type": "module",
   "browser": "dist/river-data-widget.min.js",
@@ -24,7 +24,7 @@
     "widget"
   ],
   "author": "pbuk (https://github.com/pb-uk)",
-  "license": "AGPL-3.0-or-later",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/pb-uk/river-data-widget/issues"
   },
