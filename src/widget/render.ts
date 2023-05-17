@@ -1,11 +1,9 @@
 import { RiverDataWidgetError } from '../error';
-import { createElement } from '../helpers/dom';
 import { round3 } from '../helpers/format';
 import {
   parseMeasureId,
   translateMeasureProperties,
 } from '../flood-monitoring-api/measure';
-// import { drawFlowGauge } from './gauge';
 import { Chart } from './chart';
 import { getMeasureReadings } from '../flood-monitoring-api';
 import { startOfDay } from '../helpers/time';

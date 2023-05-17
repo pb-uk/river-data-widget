@@ -1,5 +1,5 @@
 import { createSvgElement } from '../helpers/dom';
-import { timeFormatter } from '../helpers/time';
+import { timeFormatter, dddFormatter, dMmmFormatter } from '../helpers/time';
 import { FloodMonitoringApiError } from '../flood-monitoring-api/error';
 import { FONT_STACK } from '../helpers/format';
 
@@ -34,15 +34,19 @@ export type TimeSeriesValue = [
 ];
 
 export class Chart {
+  protected fontSizePx = 14;
+
   protected el: SVGElement;
   protected series: ChartSeries[];
   protected options: ChartOptions;
   protected width = 480; // 400;
   protected height = 270; // 225;
+  protected plotHeight = this.height - this.fontSizePx * 4.5;
   protected strokeWidth = 2;
   protected limits?: ChartScaleLimits;
 
-  protected attribution = 'www.riverdata.co.uk';
+  protected attribution =
+    'Uses Environment Agency data from the real-time API (Beta)';
 
   // CSS settings.
   // Just readable at 320x180.
@@ -50,13 +54,11 @@ export class Chart {
   // Perfect at 480x270 (font is 12px);
   protected styles = {
     'font-family': FONT_STACK,
-    'font-size': '14px',
+    'font-size': `${this.fontSizePx}px`,
     display: 'block',
     margin: 'auto',
     'max-width': '150vh',
   };
-
-  protected fontSizePx = 14;
 
   constructor(
     el: HTMLElement,
@@ -67,7 +69,6 @@ export class Chart {
     this.options = options;
     const viewBox = `0 0 ${this.width} ${this.height}`;
     this.attribution = options.attribution ?? this.attribution;
-    this.styles['font-size'] = `${this.fontSizePx}px`;
     this.el = createSvgElement('svg', { viewBox }, this.styles);
     el.append(this.el);
   }
@@ -82,8 +83,8 @@ export class Chart {
   getHorizontalGridlines(): SVGElement[] {
     const { minTime, maxTime, timeScale, minValue, maxValue, valueScale } =
       this.getLimits();
-    const xOffset = 0;
-    const yOffset = this.height;
+    const xOffset = this.strokeWidth / 2;
+    const yOffset = this.plotHeight;
     const x1 = xOffset;
     const x2 = xOffset + (maxTime - minTime) * timeScale;
     // Horizontal grid lines.
@@ -106,6 +107,63 @@ export class Chart {
       ++i;
       current = (base + i * interval) / factor;
     }
+    const timeAxisLine = createSvgElement(
+      'line',
+      { x1, y1: yOffset, x2, y2: yOffset },
+      { stroke: '#777' }
+    );
+
+    return [lines, labels, timeAxisLine];
+  }
+
+  getTimeScale(): SVGElement[] {
+    const { minTime, maxTime, timeScale, minValue, maxValue, valueScale } =
+      this.getLimits();
+    const xOffset = this.strokeWidth / 2;
+    const yOffset = this.plotHeight + this.strokeWidth / 2;
+    const y1 = yOffset + this.fontSizePx * 3;
+    const y2 = yOffset - this.plotHeight;
+    // Vertical grid lines.
+    const stroke = '#ddd';
+    const lines = createSvgElement('g', { stroke });
+    const labels = createSvgElement('g');
+    // Vertical grid interval.
+    const base = minTime;
+    const interval = 86400;
+    let i = 0;
+    let current = base;
+    const labelOffset = 43200 * timeScale;
+    const fill = '#444';
+    while (current <= maxTime) {
+      const x1 = xOffset + (current - minTime) * timeScale;
+      const d = new Date(current * 1000);
+      // lines.append(createSvgElement('line', { x1, y1, x2, y2: y1 }));
+      lines.append(createSvgElement('line', { x1, y1, x2: x1, y2 }));
+      labels.append(
+        createSvgElement(
+          'text',
+          {
+            x: x1 + labelOffset,
+            y: y1 - this.fontSizePx * 1.8,
+            'text-anchor': 'middle',
+          },
+          { fill },
+          `${dddFormatter.format(d)}`
+        ),
+        createSvgElement(
+          'text',
+          {
+            x: x1 + labelOffset,
+            y: y1 - this.fontSizePx * 0.5,
+            'text-anchor': 'middle',
+          },
+          { fill },
+          `${dMmmFormatter.format(d)}`
+        )
+      );
+      ++i;
+      current = base + i * interval;
+    }
     return [lines, labels];
   }
 
@@ -120,24 +178,37 @@ export class Chart {
     this.limits = {
       ...limits,
       valueScale:
-        (this.height - this.strokeWidth) / (limits.maxValue - limits.minValue),
+        (this.plotHeight - this.strokeWidth) /
+        (limits.maxValue - limits.minValue),
       timeScale:
         (this.width - this.strokeWidth) / (limits.maxTime - limits.minTime),
     };
 
-    // X axis
-    const [valueLines, valueLabels] = this.getHorizontalGridlines();
+    // Time axis.
+    const [timeLines, timeLabels] = this.getTimeScale();
+    this.el.append(timeLines);
+
+    // Value axis.
+    const [valueLines, valueLabels, timeAxisLine] =
+      this.getHorizontalGridlines();
     this.el.append(valueLines);
+    this.el.append(timeAxisLine);
 
     this.plotData();
 
     // Plot labels on top of the line.
+    this.el.append(timeLabels);
     this.el.append(valueLabels);
+
     this.el.append(
       createSvgElement(
         'text',
-        { x: this.width / 2, 'text-anchor': 'middle', y: this.height - 4 },
-        { fill: '#999' },
+        {
+          x: this.width / 2,
+          'text-anchor': 'middle',
+          y: this.height - this.fontSizePx * 0.5,
+        },
+        { fill: '#595959' },
         this.attribution
       )
     );
@@ -153,24 +224,24 @@ export class Chart {
 
     const v = formatter == null ? value : formatter(value);
     const xOffset = this.strokeWidth / 2;
-    const yOffset = this.height - this.strokeWidth / 2;
+    const yOffset = this.plotHeight - this.strokeWidth / 2;
     const x = xOffset + (time - minTime) * timeScale;
     const highLabel = (value - minValue) / valueScale >= 0.5;
     const y =
-      yOffset - (highLabel ? (maxValue - minValue) * valueScale - 20 : 24);
+      yOffset - this.plotHeight * (highLabel ? 1 : 0.5) + this.fontSizePx * 2;
 
     this.el.append(
       createSvgElement(
         'text',
         { x, y, 'text-anchor': 'end' },
         { fill: PLOT_COLOR, 'font-size': '1.5em', 'font-weight': 'bold' },
-        `${v} ${unit}<sup>3</sup>`
+        `${v} ${unit}`
       )
     );
     this.el.append(
       createSvgElement(
         'text',
-        { x, y: y + 20, 'text-anchor': 'end' },
+        { x, y: y + this.fontSizePx * 1.5, 'text-anchor': 'end' },
         { fill: PLOT_COLOR },
         `${timeFormatter.format(new Date(time * 1000))}`
       )
@@ -179,7 +250,7 @@ export class Chart {
 
   plotData() {
     const xOffset = this.strokeWidth / 2;
-    const yOffset = this.height - this.strokeWidth / 2;
+    const yOffset = this.plotHeight - this.strokeWidth / 2;
     const { data } = this.series[0];
     const { minTime, timeScale, minValue, valueScale } = this.getLimits();
     // First data point.

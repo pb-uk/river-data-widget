@@ -58,3 +58,12 @@ export const timeFormatter = new Intl.DateTimeFormat('en-GB', {
   hour12: false,
   timeZoneName: 'short',
 });
+
+export const dddFormatter = new Intl.DateTimeFormat('en-GB', {
+  weekday: 'short',
+});
+
+export const dMmmFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+});
