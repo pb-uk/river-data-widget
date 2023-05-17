@@ -218,8 +218,7 @@ export class Chart {
   plotLastValue() {
     const { data, unit, formatter } = this.series[0];
     const [time, value] = data[data.length - 1];
-    const { minTime, timeScale, minValue, maxValue, valueScale } =
-      this.getLimits();
+    const { minTime, timeScale, minValue, valueScale } = this.getLimits();
 
     const v = formatter == null ? value : formatter(value);
     const xOffset = this.strokeWidth / 2;
