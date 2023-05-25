@@ -1,41 +1,10 @@
-import { apiFetch, toTimeParameter } from './api';
 import { useStore } from './store';
 import { MINUTE_MS, startOfDay } from '../helpers/time';
 
-import type { ApiParameters, ApiResponse } from './api';
+import type { FloodApiReading } from 'uk-river-data';
 
 // Throttle requests to five minutes.
 const THROTTLE_MS = 5 * MINUTE_MS;
-
-/**
- * Internal format for readings.
- */
-export type Reading = [
-  timestamp: number, // Unix epoch timestamp (seconds).
-  value: number // Value.
-];
-
-/**
- * Internal format for readings.
- */
-export interface ReadingOptions {
-  since?: Date; // Time from.
-}
-
-/**
- * Internal format for readings.
- */
-type ReadingResponse = [a: Reading[], b: ApiResponse<ReadingDTO[]>];
-
-/**
- * Data transfer object for readings provided by the API.
- */
-interface ReadingDTO {
-  '@id': string; // The URL of this reading.
-  dateTime: string; // e.g. '2023-05-13T09:00:00Z'.
-  measure: string; // The URL of the measure.
-  value: number; // The value in the appropriate units.
-}
 
 interface StoredReadings {
   storedSince: number;
