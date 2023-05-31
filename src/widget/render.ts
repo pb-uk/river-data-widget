@@ -38,6 +38,10 @@ const drawMeasureWidget = async (
   // widgetEl.append(textEl);
 
   const series1: ChartSeries = { data, unit, formatter: round3 };
+  // Set max/min options for plot from widget options.
+  if (options.riverDataWidgetMaxValue != null) {
+    series1.max = parseFloat(<string>options.riverDataWidgetMaxValue);
+  }
   if (options.riverDataWidgetMinValue != null) {
     series1.min = parseFloat(<string>options.riverDataWidgetMinValue);
   }
