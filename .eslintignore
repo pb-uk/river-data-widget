@@ -1,6 +1,7 @@
 # .eslintignore
 
-dist
+/index.*
+types
 
 .nyc_output
 coverage

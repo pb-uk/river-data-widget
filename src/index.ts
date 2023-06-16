@@ -5,8 +5,5 @@
  * @license AGPL-3.0-or-later see LICENSE.md.
  */
 
-import { version } from '../package.json';
-
-export { version };
-
-import './autoload';
+export { version } from '../package.json';
+export { drawMeasureWidget } from './widget/render';

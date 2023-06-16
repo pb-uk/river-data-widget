@@ -27,10 +27,10 @@ const target = 'es2017';
 
 export default [
   {
-    input: './src/index.ts',
+    input: './src/autoload.ts',
     output: {
       name,
-      file: `./dist/${pkgName}.min.js`,
+      file: 'index.min.js',
       format: 'iife',
       banner,
       sourcemap: true,
@@ -49,12 +49,20 @@ export default [
   },
   {
     input: './src/index.ts',
-    output: {
-      file: './dist/index.js',
-      format: 'esm',
-      banner,
-      sourcemap: true,
-    },
+    output: [
+      {
+        file: './index.mjs',
+        format: 'esm',
+        banner,
+        sourcemap: true,
+      },
+      {
+        file: './index.cjs',
+        format: 'commonjs',
+        banner,
+        sourcemap: true,
+      },
+    ],
     plugins: [
       json(),
 
