@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.*"],
+  "exclude": ["**/**.spec.*"],
+
+  "compilerOptions": {
+    /* Emit */
+    "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
+    "emitDeclarationOnly": true /* Only output d.ts files and not JavaScript files. */,
+    "outDir": "types" /* Specify a file that bundles all outputs into one JavaScript file. If `declaration` is true, also designates a file that bundles all .d.ts output. */,
+    "removeComments": false /* Disable emitting comments. */
+  }
+}

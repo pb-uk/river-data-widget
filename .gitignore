@@ -3,7 +3,9 @@
 package-lock.json
 
 node_modules
-dist
+
+/index.*
+types
 
 .nyc_output
 coverage

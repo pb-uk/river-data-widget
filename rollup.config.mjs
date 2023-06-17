@@ -2,7 +2,6 @@ import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import { readFileSync } from 'node:fs';
 import camelCase from 'camelcase';
-import json from '@rollup/plugin-json';
 
 const pkg = JSON.parse(readFileSync('package.json'));
 
@@ -27,17 +26,15 @@ const target = 'es2017';
 
 export default [
   {
-    input: './src/index.ts',
+    input: './src/autoload.ts',
     output: {
       name,
-      file: `./dist/${pkgName}.min.js`,
+      file: 'index.min.js',
       format: 'iife',
       banner,
       sourcemap: true,
     },
     plugins: [
-      json(),
-
       typescript({
         compilerOptions: {
           target,
@@ -49,15 +46,21 @@ export default [
   },
   {
     input: './src/index.ts',
-    output: {
-      file: './dist/index.js',
-      format: 'esm',
-      banner,
-      sourcemap: true,
-    },
+    output: [
+      {
+        file: './index.mjs',
+        format: 'esm',
+        banner,
+        sourcemap: true,
+      },
+      {
+        file: './index.cjs',
+        format: 'commonjs',
+        banner,
+        sourcemap: true,
+      },
+    ],
     plugins: [
-      json(),
-
       typescript({
         compilerOptions: {
           target,

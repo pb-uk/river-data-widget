@@ -13,9 +13,9 @@ const setAttributes = <T extends HTMLElement | SVGElement>(
   el: T,
   attributes: AttributeList
 ): T => {
-  Object.entries(attributes).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(attributes)) {
     el.setAttribute(key, `${value}`);
-  });
+  }
   return el;
 };
 
@@ -23,11 +23,11 @@ const setStyles = <T extends HTMLElement | SVGElement>(
   el: T,
   styles: AttributeList
 ): T => {
-  Object.entries(styles).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(styles)) {
     // Workaround (el.style.setProperty uses kebab-case keys).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>el.style)[key] = value;
-  });
+  }
   return el;
 };
 

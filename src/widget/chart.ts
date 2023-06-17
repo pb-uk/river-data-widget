@@ -3,8 +3,6 @@ import { timeFormatter, dddFormatter, dMmmFormatter } from '../helpers/time';
 import { FloodMonitoringApiError } from '../flood-monitoring-api/error';
 import { FONT_STACK } from '../helpers/format';
 
-const PLOT_COLOR = '#77C';
-
 export interface ChartOptions {
   minTime?: number;
   maxTime?: number;
@@ -34,16 +32,23 @@ export type TimeSeriesValue = [
 ];
 
 export class Chart {
+  protected strokeWidth = 2;
   protected fontSizePx = 14;
 
   protected el: SVGElement;
   protected series: ChartSeries[];
   protected options: ChartOptions;
+
   protected width = 480; // 400;
   protected height = 270; // 225;
   protected plotHeight = this.height - this.fontSizePx * 4.5;
-  protected strokeWidth = 2;
+  protected plotWidth = this.width - this.strokeWidth;
+
   protected limits?: ChartScaleLimits;
+
+  protected plotColor = '#77C';
+  protected labelBg = 'rgba(255,255,255,0.5)';
+  protected labelBgWidth = '0.5em';
 
   protected attribution =
     'Uses Environment Agency data from the real-time API (Beta)';
@@ -217,39 +222,44 @@ export class Chart {
 
   plotLastValue() {
     const { data, unit, formatter } = this.series[0];
+
+    // If there is no data show a message.
+    if (data.length === 0) {
+      const x = this.plotWidth / 2;
+      const y = this.plotHeight / 2;
+      this.el.append(...this.createLargeLabel(x, y, 'No data', 'middle'));
+      return;
+    }
+
     const [time, value] = data[data.length - 1];
-    const { minTime, timeScale, minValue, valueScale } = this.getLimits();
+    const { minTime, timeScale, maxValue, minValue } = this.getLimits();
 
     const v = formatter == null ? value : formatter(value);
     const xOffset = this.strokeWidth / 2;
-    const yOffset = this.plotHeight - this.strokeWidth / 2;
+    // const yOffset = this.plotHeight - this.strokeWidth / 2;
     const x = xOffset + (time - minTime) * timeScale;
-    const highLabel = (value - minValue) / valueScale >= 0.5;
-    const y =
-      yOffset - this.plotHeight * (highLabel ? 1 : 0.5) + this.fontSizePx * 2;
+    const isHighLabel = (value - minValue) / (maxValue - minValue) < 0.5;
+    const y = this.plotHeight * (isHighLabel ? 0 : 0.5) + this.fontSizePx * 2;
 
     this.el.append(
-      createSvgElement(
-        'text',
-        { x, y, 'text-anchor': 'end' },
-        { fill: PLOT_COLOR, 'font-size': '1.5em', 'font-weight': 'bold' },
-        `${v} ${unit}`
-      )
-    );
-    this.el.append(
-      createSvgElement(
-        'text',
-        { x, y: y + this.fontSizePx * 1.5, 'text-anchor': 'end' },
-        { fill: PLOT_COLOR },
+      // Value label.
+      ...this.createLargeLabel(x, y, `${v} ${unit}`),
+      // Time label.
+      ...this.createLabel(
+        x,
+        y,
         `${timeFormatter.format(new Date(time * 1000))}`
       )
     );
   }
 
   plotData() {
+    const { data } = this.series[0];
+    // Don't do anything we don't have to!
+    if (data.length === 0) return;
+
     const xOffset = this.strokeWidth / 2;
     const yOffset = this.plotHeight - this.strokeWidth / 2;
-    const { data } = this.series[0];
     const { minTime, timeScale, minValue, valueScale } = this.getLimits();
     // First data point.
     const x = xOffset + (data[0][0] - minTime) * timeScale;
@@ -264,26 +274,77 @@ export class Chart {
     // Plot the data.
     const path = createSvgElement('path', {
       d: points.join(''),
-      stroke: PLOT_COLOR,
+      stroke: this.plotColor,
       'stroke-width': this.strokeWidth,
       fill: 'none',
     });
     this.el.append(path);
   }
+
+  protected createLabel(x: number, y: number, text: string, anchor = 'end') {
+    return [
+      // Background for time label.
+      createSvgElement(
+        'text',
+        { x, y: y + this.fontSizePx * 1.5, 'text-anchor': anchor },
+        {
+          stroke: this.labelBg,
+          'stroke-width': this.labelBgWidth,
+        },
+        text
+      ),
+      // Time label.
+      createSvgElement(
+        'text',
+        { x, y: y + this.fontSizePx * 1.5, 'text-anchor': anchor },
+        { fill: this.plotColor },
+        text
+      ),
+    ];
+  }
+
+  protected createLargeLabel(
+    x: number,
+    y: number,
+    text: string,
+    anchor = 'end'
+  ) {
+    return [
+      // Background for value label.
+      createSvgElement(
+        'text',
+        { x, y, 'text-anchor': anchor },
+        {
+          'font-size': '1.5em',
+          'font-weight': 'bold',
+          stroke: this.labelBg,
+          'stroke-width': this.labelBgWidth,
+        },
+        text
+      ),
+      // Value label.
+      createSvgElement(
+        'text',
+        { x, y, 'text-anchor': anchor },
+        { fill: this.plotColor, 'font-size': '1.5em', 'font-weight': 'bold' },
+        text
+      ),
+    ];
+  }
 }
 
 export const getLimits = (data: TimeSeriesValue[]) => {
   if (data.length < 1) {
-    throw new Error('Readings must not be empty');
+    return { minTime: 0, maxTime: 1, minValue: 0, maxValue: 0 };
   }
   const minTime = data[0][0];
   const maxTime = data[data.length - 1][0];
   let minValue = Infinity;
   let maxValue = -minValue;
-  data.forEach(([, value]) => {
+  for (const [, value] of data) {
     minValue = Math.min(minValue, value);
     maxValue = Math.max(maxValue, value);
-  });
+  }
   return { minTime, maxTime, minValue, maxValue };
 };
 

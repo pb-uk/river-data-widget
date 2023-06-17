@@ -5,42 +5,56 @@ import {
   translateMeasureProperties,
 } from '../flood-monitoring-api/measure';
 import { Chart } from './chart';
-import { getMeasureReadings } from '../flood-monitoring-api';
+import { getMeasureReadings as getFloodMeasureReadings } from '../flood-monitoring-api';
 import { startOfDay } from '../helpers/time';
 
 import type { ChartSeries } from './chart';
+import type { Reading } from '../flood-monitoring-api/reading';
 
-const drawMeasureWidget = async (
+export const drawMeasureWidget = async (
   parentEl: HTMLElement,
   measureId: string,
   options: Record<string, unknown> = {}
 ) => {
   // Get readings for the last 7 days in local time.
   const since = startOfDay(null, -7, true);
+  let data: Reading[] = [];
 
-  const data = await getMeasureReadings(measureId, { since });
+  // Get the right API.
+  const parts = measureId.split('/');
+  const id = parts.pop() ?? '';
+  const api = parts.length === 0 ? 'flood' : parts[0];
+  switch (api) {
+    case 'flood':
+      data = await getFloodMeasureReadings(id, { since });
+  }
 
+  // Clear the GUI deck.
   parentEl.replaceChildren();
 
   const measure = parseMeasureId(measureId);
   const { unit } = translateMeasureProperties(measure);
 
-  // const [time, value] = data[data.length - 1];
-  // const v = round3(value);
-  // const param = m.qualifiedParameter;
-  // const station = measure.stationId;
-  // const unit = m.unit;
-
-  // let textEl = createElement('div');
-  // const d = dateFormatter.format(new Date(time * 1000));
-  // const t = timeFormatter.format(new Date(time * 1000));
-  // textEl.innerHTML = `The most recent ${param} reading for station ${station} was ${v} ${unit} at ${t} on ${d}.`;
-  // widgetEl.append(textEl);
-
   const series1: ChartSeries = { data, unit, formatter: round3 };
+  // Set max/min options for plot from widget options.
+  if (options.riverDataWidgetMaxValue != null) {
+    series1.max = parseFloat(<string>options.riverDataWidgetMaxValue);
+  }
   if (options.riverDataWidgetMinValue != null) {
     series1.min = parseFloat(<string>options.riverDataWidgetMinValue);
   }
+
+  // Deal with no data.
+  if (data.length === 0) {
+    const minTime = since.valueOf() / 1000;
+    const maxTime = minTime + 86400 * 7;
+    const chartOptions = { minTime, maxTime };
+
+    const chart = new Chart(parentEl, [series1], chartOptions);
+    chart.render();
+    return;
+  }
+
   const minTime = startOfDay(new Date(data[0][0] * 1000)).valueOf() / 1000;
   const maxTime =
     startOfDay(new Date(data[data.length - 1][0] * 1000), 1).valueOf() / 1000;
@@ -76,11 +90,6 @@ export const loadWidget = (el: HTMLElement | string) => {
     case 'measure':
       drawMeasureWidget(targetEl, id, options);
       break;
-
-    // The 'station' widget is experimental in v1.0 and should not be used.
-    // case 'station':
-    // break;
-
     default:
       throw new RiverDataWidgetError('Unknown widget definition', { type, id });
   }
