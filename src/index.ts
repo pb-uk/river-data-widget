@@ -5,5 +5,6 @@
  * @license AGPL-3.0-or-later see LICENSE.md.
  */
 
-export { version } from '../package.json';
 export { drawMeasureWidget } from './widget/render';
+
+export const version = '1.2.0';

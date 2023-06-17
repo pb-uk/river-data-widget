@@ -9,7 +9,7 @@
   "browser": "index.min.js",
   "scripts": {
     "build": "npm run clean && npm run lint:check && npm run test && rollup -c && tsc --project tsconfig.types.json",
-    "clean": "rimraf dist",
+    "clean": "rimraf types \"index.*\" --glob",
     "coverage": "rimraf coverage && c8 -r html -r text npm run test:unit",
     "lint": "eslint . --fix && prettier . --write",
     "lint:check": "eslint . && prettier . --check",
@@ -33,12 +33,11 @@
   },
   "homepage": "https://github.com/pb-uk/river-data-widget#readme",
   "files": [
-    "dist",
+    "index.*",
     "types"
   ],
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.4.2",
     "@rollup/plugin-typescript": "^11.1.1",

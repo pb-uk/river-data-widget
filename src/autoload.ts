@@ -4,17 +4,18 @@
  * @copyright Copyright (C) 2022 pbuk https://github.com/pb-uk.
  * @license AGPL-3.0-or-later see LICENSE.md.
  */
-export { version } from '../package.json';
 import { loadWidget } from './widget/render';
 
+export { version } from '.';
+
 const autoload = async () => {
-  document.querySelectorAll('[data-river-data-widget]').forEach((el) => {
+  for (const el of document.querySelectorAll('[data-river-data-widget]')) {
     try {
       loadWidget(<HTMLElement>el);
     } catch (error) {
       console.error(error, { error });
     }
-  });
+  }
 };
 
 if (document.readyState === 'loading') {

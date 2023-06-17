@@ -137,17 +137,17 @@ export const mergeReadings = (first: Reading[], second: Reading[]): void => {
 
 const parseReadings = (items: ReadingDTO[]): Record<string, Reading[]> => {
   const ranges: Record<string, Reading[]> = {};
-  items.forEach(({ measure, dateTime, value }) => {
+  for (const { measure, dateTime, value } of items) {
     if (ranges[measure] == null) {
       ranges[measure] = [];
     }
     ranges[measure].unshift([new Date(dateTime).valueOf() / 1000, value]);
-  });
+  }
 
   const rangesById: Record<string, Reading[]> = {};
-  Object.entries(ranges).forEach(([key, range]) => {
+  for (const [key, range] of Object.entries(ranges)) {
     rangesById[key.substring(key.lastIndexOf('/') + 1)] = range;
-  });
+  }
 
   return rangesById;
 };

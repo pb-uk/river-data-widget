@@ -303,10 +303,10 @@ export const getLimits = (data: TimeSeriesValue[]) => {
   const maxTime = data[data.length - 1][0];
   let minValue = Infinity;
   let maxValue = -minValue;
-  data.forEach(([, value]) => {
+  for (const [, value] of data) {
     minValue = Math.min(minValue, value);
     maxValue = Math.max(maxValue, value);
-  });
+  }
   return { minTime, maxTime, minValue, maxValue };
 };
 

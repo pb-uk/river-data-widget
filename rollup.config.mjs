@@ -2,7 +2,6 @@ import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import { readFileSync } from 'node:fs';
 import camelCase from 'camelcase';
-import json from '@rollup/plugin-json';
 
 const pkg = JSON.parse(readFileSync('package.json'));
 
@@ -36,8 +35,6 @@ export default [
       sourcemap: true,
     },
     plugins: [
-      json(),
-
       typescript({
         compilerOptions: {
           target,
@@ -64,8 +61,6 @@ export default [
       },
     ],
     plugins: [
-      json(),
-
       typescript({
         compilerOptions: {
           target,
