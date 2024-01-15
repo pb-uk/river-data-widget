@@ -1,9 +1,31 @@
 import { expect } from 'chai';
 
-import { mergeReadings } from './reading';
-import type { Reading } from './reading';
+import { mergeReadings, parseReadings } from './reading';
+import type { Reading, ReadingDTO } from './reading';
 
 describe('Flood monitoring API readings', function () {
+  describe('parseReadings', function () {
+    it('should parse a response with an undocumented value', function () {
+      // xprettier-ignore
+      const items = [
+        {
+          '@id': 'ignored',
+          dateTime: '2024-01-08T13:00:00Z',
+          measure: 'can/be/any/name',
+          value: [355.858, 371.289],
+        },
+        {
+          '@id': 'ignored',
+          dateTime: '2024-01-08T12:45:00Z',
+          measure: 'can/be/any/name',
+          value: 372.456,
+        },
+      ] as unknown as ReadingDTO[];
+      const parsed = parseReadings(items);
+      expect(parsed.name).to.eql([[1704717900, 372.456]]);
+    });
+  });
+
   describe('mergeReadings', function () {
     it('should merge two disjoint arrays', function () {
       // prettier-ignore

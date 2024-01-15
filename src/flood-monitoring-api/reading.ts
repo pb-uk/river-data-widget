@@ -30,11 +30,12 @@ type ReadingResponse = [a: Reading[], b: ApiResponse<ReadingDTO[]>];
 /**
  * Data transfer object for readings provided by the API.
  */
-interface ReadingDTO {
+export interface ReadingDTO {
   '@id': string; // The URL of this reading.
   dateTime: string; // e.g. '2023-05-13T09:00:00Z'.
   measure: string; // The URL of the measure.
-  value: number; // The value in the appropriate units.
+  // See https://github.com/pb-uk/river-data-widget/issues/5.
+  value?: unknown; // The value in the appropriate units.
 }
 
 interface StoredReadings {
@@ -135,13 +136,19 @@ export const mergeReadings = (first: Reading[], second: Reading[]): void => {
   first.splice(firstPos + 1, Infinity, ...second);
 };
 
-const parseReadings = (items: ReadingDTO[]): Record<string, Reading[]> => {
+export const parseReadings = (
+  items: ReadingDTO[]
+): Record<string, Reading[]> => {
   const ranges: Record<string, Reading[]> = {};
   for (const { measure, dateTime, value } of items) {
     if (ranges[measure] == null) {
       ranges[measure] = [];
     }
-    ranges[measure].unshift([new Date(dateTime).valueOf() / 1000, value]);
+    // Ignore missing or unexpected values - see
+    // https://github.com/pb-uk/river-data-widget/issues/5
+    if (typeof value === 'number' && !isNaN(value)) {
+      ranges[measure].unshift([new Date(dateTime).valueOf() / 1000, value]);
+    }
   }
 
   const rangesById: Record<string, Reading[]> = {};
